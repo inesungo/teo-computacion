@@ -1,0 +1,137 @@
+// Analizador Sintáctico para Recetario Digital
+// PARTE 2 - Integrante: [NOMBRE]
+
+package cup;
+
+import jflex.*;
+import main.*;
+import java.util.*;
+
+// Declaración de símbolos terminales
+terminal String RECETA;
+terminal String INGREDIENTES;
+terminal String PASOS;
+terminal String TIEMPO;
+terminal String PORCIONES;
+terminal String CALORIAS;
+terminal String CATEGORIAS;
+terminal String ORIGEN;
+terminal String DIFICULTAD;
+terminal String TIPO;
+terminal String RECETAS_RELACIONADAS;
+terminal String OBS;
+
+terminal String STRING;
+terminal Integer NUMERO;
+terminal String NUMERO_DECIMAL;
+terminal String FRACCION;
+terminal String UNIDAD_PESO, UNIDAD_VOLUMEN, UNIDAD_CUCHARA, UNIDAD_UNIDAD, UNIDAD_TIEMPO;
+terminal String CATEGORIA;
+terminal String IDENTIFICADOR;
+terminal String CALORIA;
+
+terminal String DOS_PUNTOS, PUNTO, COMA, CORCHETE_ABIERTO, CORCHETE_CERRADO, IGUAL;
+
+// No terminales
+non terminal Recetario recetario;
+non terminal Receta receta;
+non terminal List<Ingrediente> listaIngredientes;
+non terminal Ingrediente ingrediente;
+non terminal List<String> listaPasos;
+non terminal String paso;
+non terminal List<String> listaCategorias;
+non terminal String categoria;
+non terminal List<String> listaRecetasRelacionadas;
+non terminal Map<String, String> informacionAdicional;
+
+// Inicio
+start with recetario;
+
+// Gramática
+
+recetario ::= 
+    receta
+    | recetario receta
+    ;
+
+receta ::= 
+    RECETA STRING:DOS_PUNTOS
+    INGREDIENTES DOS_PUNTOS listaIngredientes:ing
+    PASOS DOS_PUNTOS listaPasos:pas
+    TIEMPO DOS_PUNTOS STRING:tiempo
+    PORCIONES DOS_PUNTOS NUMERO:porc
+    CALORIAS DOS_PUNTOS NUMERO:cal CALORIA
+    CATEGORIAS DOS_PUNTOS listaCategorias:cat
+    DIFICULTAD DOS_PUNTOS STRING:diff
+    {:
+        // Construir objeto Receta
+        // TODO: Completar construcción con todos los campos
+    :}
+    | RECETA STRING:DOS_PUNTOS
+      INGREDIENTES DOS_PUNTOS listaIngredientes:ing
+      PASOS DOS_PUNTOS listaPasos:pas
+      TIEMPO DOS_PUNTOS STRING:tiempo
+      PORCIONES DOS_PUNTOS NUMERO:porc
+      CALORIAS DOS_PUNTOS NUMERO:cal CALORIA
+      CATEGORIAS DOS_PUNTOS listaCategorias:cat
+      DIFICULTAD DOS_PUNTOS STRING:diff
+      ORIGEN DOS_PUNTOS STRING:orig
+      {:
+        // Versión con origen opcional
+      :}
+    // TODO: Agregar más variantes con campos opcionales
+    ;
+
+listaIngredientes ::= 
+    ingrediente
+    | listaIngredientes ingrediente
+    ;
+
+ingrediente ::= 
+    IDENTIFICADOR:nom NUMERO:cant UNIDAD_PESO:unid
+    | IDENTIFICADOR:nom NUMERO_DECIMAL:cant UNIDAD_PESO:unid
+    | IDENTIFICADOR:nom FRACCION:cant UNIDAD_VOLUMEN:unid
+    | IDENTIFICADOR:nom IDENTIFICADOR:expr
+    {:
+        // TODO: Construir objeto Ingrediente
+        // Manejar diferentes formatos de cantidad y unidad
+    :}
+    ;
+
+listaPasos ::= 
+    paso
+    | listaPasos paso
+    ;
+
+paso ::= 
+    NUMERO:PUNTO STRING:descripcion
+    {:
+        // TODO: Agregar paso a la lista
+    :}
+    ;
+
+listaCategorias ::= 
+    CORCHETE_ABIERTO categoria CORCHETE_CERRADO
+    | CORCHETE_ABIERTO categoria COMA categoria CORCHETE_CERRADO
+    // TODO: Manejar múltiples categorías separadas por coma
+    ;
+
+categoria ::= 
+    CATEGORIA:cat
+    {:
+        // TODO: Agregar categoría
+    :}
+    ;
+
+listaRecetasRelacionadas ::= 
+    RECETAS_RELACIONADAS DOS_PUNTOS STRING:rec1
+    | RECETAS_RELACIONADAS DOS_PUNTOS STRING:rec1 COMA STRING:rec2
+    // TODO: Manejar lista completa
+    ;
+
+informacionAdicional ::= 
+    IDENTIFICADOR:etiqueta IGUAL IDENTIFICADOR:valor
+    | informacionAdicional COMA IDENTIFICADOR:etiqueta IGUAL IDENTIFICADOR:valor
+    // TODO: Construir mapa de información adicional
+    ;
+
