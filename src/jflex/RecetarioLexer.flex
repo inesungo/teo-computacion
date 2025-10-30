@@ -1,151 +1,126 @@
-// Analizador Léxico para Recetario Digital
-// PARTE 1 - Integrante: [NOMBRE]
-
-package jflex;
+/* ========= RecetarioLexer.flex ========= */
+import java_cup.runtime.Symbol;
 
 %%
-%class RecetarioLexer
-%public
 %unicode
+%cup
 %line
 %column
-%cup
+%class RecetarioLexer
+%ignorecase
 
 %{
-    // Código Java que se incluirá en la clase generada
-    private StringBuilder string = new StringBuilder();
-    
-    // Método para obtener el texto actual
-    public String getText() {
-        return yytext();
-    }
+  /* ===== Helpers ===== */
+  private Symbol sym(int type) {
+    return new Symbol(type, yyline+1, yycolumn+1);
+  }
+  private Symbol sym(int type, Object value) {
+    return new Symbol(type, yyline+1, yycolumn+1, value);
+  }
+
+  // Unescape mínimo para strings: \" y \\ → " y \
+  private String unescapeMin(String rawWithQuotes) {
+    String inner = rawWithQuotes.substring(1, rawWithQuotes.length() - 1);
+    inner = inner.replace("\\\\", "\\");
+    inner = inner.replace("\\\"", "\"");
+    return inner;
+  }
 %}
 
-// Definiciones regulares
-
-LineTerminator = \r|\n|\r\n
-InputCharacter = [^\r\n]
-WhiteSpace = [ \t\f]
-
-// Comentarios (si se desea soportar)
-Comment = {TraditionalComment} | {EndOfLineComment}
-TraditionalComment = "/*" [^*] ~"*/" | "/*" "*"+ "/"
-EndOfLineComment = "//" {InputCharacter}*
-
-// Palabras clave
-PALABRA_RECETA = "RECETA"
-PALABRA_INGREDIENTES = "INGREDIENTES"
-PALABRA_PASOS = "PASOS"
-PALABRA_TIEMPO = "Tiempo"
-PALABRA_PORCIONES = "Porciones"
-PALABRA_CALORIAS = "Calorías"
-PALABRA_CATEGORIAS = "Categorías"
-PALABRA_ORIGEN = "Origen"
-PALABRA_DIFICULTAD = "Dificultad"
-PALABRA_TIPO = "Tipo"
-PALABRA_RECETAS_RELACIONADAS = "Recetas relacionadas"
-PALABRA_OBS = "Obs"
-
-// Unidades de medida
-UNIDAD_PESO = "g" | "kg" | "mg"
-UNIDAD_VOLUMEN = "l" | "ml" | "cm3" | "taza" | "tazas" | "litro" | "litros"
-UNIDAD_CUCHARA = "cuchara" | "cucharas" | "cucharita" | "cucharitas"
-UNIDAD_UNIDAD = "u" | "unidad" | "unidades"
-UNIDAD_TIEMPO = "min" | "minutos" | "h" | "horas" | "hora"
-
-// Números
-DIGITO = [0-9]
-NUMERO_ENTERO = {DIGITO}+
-NUMERO_DECIMAL = {NUMERO_ENTERO}","{NUMERO_ENTERO} | {NUMERO_ENTERO}"."{NUMERO_ENTERO}
-FRACCION = {NUMERO_ENTERO}"/"{NUMERO_ENTERO} | {NUMERO_ENTERO}" "{NUMERO_ENTERO}"/"{NUMERO_ENTERO}
-
-// Categorías
-CATEGORIA = "Desayuno" | "Merienda" | "Principal" | "Entrada" | "Colación" | "Postre" | "Almuerzo" | "Cena"
-
-// Nivel de dificultad (ejemplos - ajustar según diseño)
-DIFICULTAD = "BAJA" | "MEDIA" | "ALTA" | "MUY_ALTA" | [*]{1,5} | {NUMERO_ENTERO}
-
-// Identificadores y texto
-LETRA = [a-zA-ZÁÉÍÓÚáéíóúñÑ]
-IDENTIFICADOR = {LETRA}({LETRA}|{DIGITO}|"_"|"-")*
-TEXTO_LIBRE = {IDENTIFICADOR}({WhiteSpace}+{IDENTIFICADOR})*
-
-// String entre comillas
-STRING_SIMPLE = \"[^\"]*\"
-STRING_DOBLE = \"\"[^\"]*\"\"
-
-// Símbolos especiales
-DOS_PUNTOS = ":"
-PUNTO = "."
-COMA = ","
-CORCHETE_ABIERTO = "["
-CORCHETE_CERRADO = "]"
-IGUAL = "="
-COMILLA_SIMPLE = "'"
-
-// Calorías
-CALORIA = "Kcal" | "kcal" | "calorías" | "Calorías"
+/* ==== Macros generales ==== */
+ESP     = [ \t\f]+
+NL      = \r\n|\r|\n
+DIG     = [0-9]
+INT     = 0|[1-9][0-9]*
+IDCHAR  = [A-Za-zÁÉÍÓÚÜÑáéíóúüñ_]
+IDREST  = [A-Za-zÁÉÍÓÚÜÑáéíóúüñ_0-9\-]
+ESC     = \\\\.
+STRCHAR = [^\\\"\r\n]
 
 %%
 
-// Reglas léxicas
+/* ===== PALABRAS CLAVE (secciones) ===== */
+"RECETA"                    { return sym(sym.RECETA_KW); }
+"INGREDIENTES"              { return sym(sym.INGREDIENTES_KW); }
+"PASOS"                     { return sym(sym.PASOS_KW); }
 
-{Comment}           { /* Ignorar comentarios */ }
+"TIEMPO"                    { return sym(sym.TIEMPO_KW); }
+"PORCIONES"                 { return sym(sym.PORCIONES_KW); }
+"CALORÍAS" | "CALORIAS"     { return sym(sym.CALORIAS_KW); }
+"CATEGORÍAS" | "CATEGORIAS" { return sym(sym.CATEGORIAS_KW); }
 
-{WhiteSpace}        { /* Ignorar espacios en blanco */ }
+"ORIGEN"                    { return sym(sym.ORIGEN_KW); }
+"DIFICULTAD"                { return sym(sym.DIFICULTAD_KW); }
+"TIPO"                      { return sym(sym.TIPO_KW); }
 
-{LineTerminator}    { /* Ignorar saltos de línea */ }
+"RECETAS" [ ]+ "RELACIONADAS" { return sym(sym.RELACIONADAS_KW); }
+"OBS"                         { return sym(sym.OBS_KW); }
 
-// Palabras clave
-{PALABRA_RECETA}                { return symbol(sym.RECETA); }
-{PALABRA_INGREDIENTES}         { return symbol(sym.INGREDIENTES); }
-{PALABRA_PASOS}                 { return symbol(sym.PASOS); }
-{PALABRA_TIEMPO}                { return symbol(sym.TIEMPO); }
-{PALABRA_PORCIONES}             { return symbol(sym.PORCIONES); }
-{PALABRA_CALORIAS}              { return symbol(sym.CALORIAS); }
-{PALABRA_CATEGORIAS}            { return symbol(sym.CATEGORIAS); }
-{PALABRA_ORIGEN}                { return symbol(sym.ORIGEN); }
-{PALABRA_DIFICULTAD}            { return symbol(sym.DIFICULTAD); }
-{PALABRA_TIPO}                  { return symbol(sym.TIPO); }
-{PALABRA_RECETAS_RELACIONADAS}  { return symbol(sym.RECETAS_RELACIONADAS); }
-{PALABRA_OBS}                   { return symbol(sym.OBS); }
+/* ===== PUNTUACIÓN / SÍMBOLOS ===== */
+":"          { return sym(sym.COLON); }
+","          { return sym(sym.COMMA); }
+"["          { return sym(sym.LBRACK); }
+"]"          { return sym(sym.RBRACK); }
+"="          { return sym(sym.EQ); }
+[.]          { return sym(sym.DOT); }
 
-// Números
-{NUMERO_ENTERO}     { return symbol(sym.NUMERO, Integer.parseInt(yytext())); }
-{NUMERO_DECIMAL}    { return symbol(sym.NUMERO_DECIMAL, yytext()); }
-{FRACCION}          { return symbol(sym.FRACCION, yytext()); }
+/* ===== STRINGS ENTRE COMILLAS ===== */
+\"({ESC}|{STRCHAR})*\" {
+    return sym(sym.STRING, unescapeMin(yytext()));
+}
 
-// Unidades
-{UNIDAD_PESO}       { return symbol(sym.UNIDAD_PESO, yytext()); }
-{UNIDAD_VOLUMEN}    { return symbol(sym.UNIDAD_VOLUMEN, yytext()); }
-{UNIDAD_CUCHARA}    { return symbol(sym.UNIDAD_CUCHARA, yytext()); }
-{UNIDAD_UNIDAD}     { return symbol(sym.UNIDAD_UNIDAD, yytext()); }
-{UNIDAD_TIEMPO}     { return symbol(sym.UNIDAD_TIEMPO, yytext()); }
+/* ===== CANTIDADES Y UNIDADES ===== */
 
-// Símbolos
-{DOS_PUNTOS}        { return symbol(sym.DOS_PUNTOS); }
-{PUNTO}             { return symbol(sym.PUNTO); }
-{COMA}              { return symbol(sym.COMA); }
-{CORCHETE_ABIERTO}  { return symbol(sym.CORCHETE_ABIERTO); }
-{CORCHETE_CERRADO}  { return symbol(sym.CORCHETE_CERRADO); }
-{IGUAL}             { return symbol(sym.IGUAL); }
+/* Literal “a gusto” */
+"a gusto"                  { return sym(sym.A_GUSTO); }
 
-// Strings
-{STRING_SIMPLE}     { String text = yytext(); 
-                      return symbol(sym.STRING, text.substring(1, text.length()-1)); }
-{STRING_DOBLE}      { String text = yytext(); 
-                      return symbol(sym.STRING, text.substring(2, text.length()-1)); }
+/* Fracciones como 1/2, 3/4, 5/10 */
+{INT}/{INT}                { return sym(sym.FRAC, yytext()); }
 
-// Identificadores (para nombres de ingredientes, países, tipos, etc.)
-{IDENTIFICADOR}     { return symbol(sym.IDENTIFICADOR, yytext()); }
+/* Decimales: 3.5 o 2,5 (punto o coma) + enteros */
+{INT}([.,]{DIG}+)?         {
+    if (yytext().contains(".") || yytext().contains(","))
+         return sym(sym.DEC, yytext());
+    else return sym(sym.INT, Integer.parseInt(yytext()));
+}
 
-// Calorías
-{CALORIA}           { return symbol(sym.CALORIA, yytext()); }
+/* Unidades: g, kg, l, ml, taza(s), cuchara(s), cucharita(s), u */
+(g|kg|l|ml|taza(s)?|cuchara(s)?|cucharita(s)?|u)  {
+    return sym(sym.UNIT, yytext());
+}
 
-// Categorías
-{CATEGORIA}         { return symbol(sym.CATEGORIA, yytext()); }
+/* Números de paso tipo “1.”, “2.”, “10.” */
+{INT}[.]                  {
+    String num = yytext().substring(0, yytext().length()-1);
+    return sym(sym.STEPNUM, Integer.parseInt(num));
+}
 
-// Caracter no reconocido
-.                   { System.err.println("Caracter no reconocido: '" + yytext() + "' en línea " + yyline + ", columna " + yycolumn); 
-                      return symbol(sym.error); }
+/* ===== ETIQUETAS Y VALORES ===== */
 
+/* Identificadores simples */
+{IDCHAR}{IDREST}?         { return sym(sym.ID, yytext()); }
+
+/* Valores con letras, dígitos y espacios (p.ej. "Muy facil", "Sin gluten") */
+({IDCHAR}|{DIG}|[ ])+     { return sym(sym.ID, yytext().trim()); }
+
+/* ===== COMENTARIOS Y FORMATO EXTRA ===== */
+
+/* Comentarios de una línea: # o //  */
+"#"[^\r\n]*               { /* ignorar comentario tipo # */ }
+"//"[^\r\n]*              { /* ignorar comentario tipo // */ }
+
+/* Comentarios de varias líneas estilo bloque:  /* ... */  */
+"/*"([^*]|\*+[^*/])*\*+"/"  { /* ignorar bloque */ }
+
+/* ===== ESPACIOS Y SALTOS ===== */
+{ESP}    { /* ignorar espacios */ }
+{NL}     { /* ignorar saltos de línea */ }
+
+/* ===== ERROR LÉXICO ===== */
+. {
+    throw new Error(
+      "Carácter inesperado '" + yytext() +
+      "' en línea " + (yyline+1) +
+      ", columna " + (yycolumn+1)
+    );
+}

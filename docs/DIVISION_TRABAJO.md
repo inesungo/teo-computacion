@@ -286,5 +286,5 @@ Implementar funcionalidades avanzadas, validaciones adicionales y desafíos opci
 - Los desafíos pueden elegirse según interés, pero se recomienda implementar al menos 3
 - La comunicación entre integrantes es crucial para una buena integración
 
-¡Éxito con el proyecto!
+
 
