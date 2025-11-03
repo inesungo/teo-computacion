@@ -55,7 +55,14 @@ public class Ingrediente {
     
     @Override
     public String toString() {
-        return nombre + " " + cantidad + " " + unidad;
+        StringBuilder sb = new StringBuilder(nombre);
+        if (cantidad != null) {
+            sb.append(" ").append(cantidad);
+        }
+        if (unidad != null) {
+            sb.append(" ").append(unidad);
+        }
+        return sb.toString();
     }
 }
 

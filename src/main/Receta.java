@@ -140,12 +140,35 @@ public class Receta {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("RECETA: ").append(nombre).append("\n");
-        sb.append("Ingredientes: ").append(ingredientes.size()).append("\n");
-        sb.append("Pasos: ").append(pasos.size()).append("\n");
+        sb.append("=== RECETA: ").append(nombre).append(" ===\n");
+        sb.append("Ingredientes (").append(ingredientes.size()).append("):\n");
+        for (Ingrediente ing : ingredientes) {
+            sb.append("  - ").append(ing.toString()).append("\n");
+        }
+        sb.append("Pasos (").append(pasos.size()).append("):\n");
+        for (String paso : pasos) {
+            sb.append("  ").append(paso).append("\n");
+        }
         sb.append("Tiempo: ").append(tiempo).append("\n");
         sb.append("Porciones: ").append(porciones).append("\n");
-        sb.append("Calorías: ").append(calorias).append("\n");
+        sb.append("Calorías: ").append(calorias).append(" Kcal\n");
+        sb.append("Categorías: ").append(categorias).append("\n");
+        sb.append("Dificultad: ").append(dificultad).append("\n");
+        if (origen != null) {
+            sb.append("Origen: ").append(origen).append("\n");
+        }
+        if (tipo != null) {
+            sb.append("Tipo: ").append(tipo).append("\n");
+        }
+        if (observaciones != null) {
+            sb.append("Observaciones: ").append(observaciones).append("\n");
+        }
+        if (!recetasRelacionadas.isEmpty()) {
+            sb.append("Recetas relacionadas: ").append(recetasRelacionadas).append("\n");
+        }
+        if (!informacionAdicional.isEmpty()) {
+            sb.append("Información adicional: ").append(informacionAdicional).append("\n");
+        }
         return sb.toString();
     }
 }

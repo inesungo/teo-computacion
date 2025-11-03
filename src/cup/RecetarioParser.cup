@@ -1,0 +1,437 @@
+/* ========= RecetarioParser.cup ========= */
+/* Analizador sintáctico para Recetario Digital - PARTE 2 */
+
+package cup;
+
+import java_cup.runtime.*;
+import main.*;
+
+/* ===== TERMINALES (tokens del lexer) ===== */
+terminal RECETA_KW, INGREDIENTES_KW, PASOS_KW;
+terminal TIEMPO_KW, PORCIONES_KW, CALORIAS_KW, CATEGORIAS_KW;
+terminal ORIGEN_KW, DIFICULTAD_KW, TIPO_KW, RELACIONADAS_KW, OBS_KW;
+terminal COLON, COMMA, LBRACK, RBRACK, EQ, DOT;
+terminal String STRING;
+terminal String ID;
+terminal Integer INT;
+terminal String DEC, FRAC, UNIT, STARS;
+terminal Integer STEPNUM;
+terminal String A_GUSTO;
+terminal TRES_PUNTOS;
+
+/* ===== NO TERMINALES ===== */
+non terminal Recetario recetario;
+non terminal java.util.List<Receta> lista_recetas;
+non terminal Receta receta;
+non terminal Ingrediente ingrediente;
+non terminal java.util.List<Ingrediente> lista_ingredientes;
+non terminal java.util.List<String> lista_pasos;
+non terminal String paso_texto;
+non terminal String elemento_paso;
+non terminal String tiempo_valor;
+non terminal String texto_tiempo;
+non terminal String dificultad_valor;
+non terminal Integer calorias_valor;
+non terminal java.util.List<String> lista_categorias;
+non terminal java.util.List<String> lista_categorias_interna;
+non terminal java.util.List<String> lista_recetas_relacionadas;
+non terminal CamposOpcionales campos_opcionales;
+non terminal CamposOpcionales campo_opcional;
+non terminal java.util.Map<String, String> info_adicional;
+non terminal String valor_info;
+non terminal String cantidad_opcional;
+
+/* ===== PRECEDENCIA ===== */
+precedence left COMMA;
+
+/* Permitir conflicto shift/reduce para nombres compuestos de ingredientes */
+/* El conflicto es entre: ID cantidad_opcional (vacío) vs ID ID cantidad */
+/* Preferimos shift (juntar IDs) sobre reduce (ingrediente simple sin cantidad) */
+
+/* ===== REGLAS GRAMATICALES ===== */
+
+/* Recetario completo: puede tener múltiples recetas */
+recetario ::= lista_recetas:l
+              {: RESULT = new Recetario(l); :}
+            ;
+
+/* Lista de recetas: una o más recetas */
+lista_recetas ::= receta:r
+                  {: 
+                    java.util.List<Receta> lista = new java.util.ArrayList<Receta>();
+                    lista.add(r);
+                    RESULT = lista;
+                  :}
+                | lista_recetas:lr receta:r
+                  {: 
+                    lr.add(r);
+                    RESULT = lr;
+                  :}
+                ;
+
+/* Una receta completa - Campos obligatorios en orden fijo, opcionales al final */
+receta ::= RECETA_KW STRING:nombre
+           INGREDIENTES_KW COLON lista_ingredientes:ing
+           PASOS_KW COLON lista_pasos:pasos
+           TIEMPO_KW COLON tiempo_valor:tiempo
+           PORCIONES_KW COLON INT:porciones
+           CALORIAS_KW COLON calorias_valor:cal
+           CATEGORIAS_KW COLON lista_categorias:cats
+           campos_opcionales:opc
+           {: 
+             // Validaciones de campos obligatorios
+             if (ing == null || ing.isEmpty()) {
+                 throw new RuntimeException("Error: La receta debe tener al menos un ingrediente");
+             }
+             if (pasos == null || pasos.isEmpty()) {
+                 throw new RuntimeException("Error: La receta debe tener al menos un paso");
+             }
+             if (cats == null || cats.isEmpty()) {
+                 throw new RuntimeException("Error: La receta debe tener al menos una categoría");
+             }
+             if (tiempo == null || tiempo.trim().isEmpty()) {
+                 throw new RuntimeException("Error: La receta debe especificar el tiempo");
+             }
+             
+             Receta rec = new Receta();
+             rec.setNombre((String)nombre);
+             rec.getIngredientes().addAll(ing);
+             rec.getPasos().addAll(pasos);
+             rec.setTiempo(tiempo);
+             rec.setPorciones((Integer)porciones);
+             rec.setCalorias(cal);
+             rec.getCategorias().addAll(cats);
+             
+             // Campos opcionales (incluye Dificultad)
+             if (opc != null) {
+                 if (opc.dificultad != null) rec.setDificultad(opc.dificultad);
+                 if (opc.origen != null) rec.setOrigen(opc.origen);
+                 if (opc.tipo != null) rec.setTipo(opc.tipo);
+                 if (opc.observaciones != null) rec.setObservaciones(opc.observaciones);
+                 if (opc.relacionadas != null) rec.getRecetasRelacionadas().addAll(opc.relacionadas);
+                 if (opc.infoAdicional != null) rec.getInformacionAdicional().putAll(opc.infoAdicional);
+             }
+             
+             RESULT = rec;
+           :}
+         ;
+
+/* Valor de tiempo: puede ser un ID (ej: "45 min", "1h 15 min") */
+tiempo_valor ::= texto_tiempo:t
+                 {: RESULT = t; :}
+               ;
+
+/* Texto de tiempo: puede ser ID, o combinaciones de números y unidades */
+texto_tiempo ::= ID:t
+                 {: RESULT = (String)t; :}
+               | INT:n1 ID:u1
+                 {: RESULT = n1 + (String)u1; :}
+               | INT:n1 ID:u1 INT:n2 ID:u2
+                 {: RESULT = n1 + (String)u1 + " " + n2 + " " + (String)u2; :}
+               | INT:n1 ID:u1 INT:n2
+                 {: RESULT = n1 + (String)u1 + " " + n2; :}
+               | INT:n1
+                 {: RESULT = String.valueOf((Integer)n1); :}
+               ;
+
+/* Valor de dificultad: puede ser texto (ID) o estrellas (STARS) */
+dificultad_valor ::= ID:txt
+                     {: RESULT = (String)txt; :}
+                   | STARS:stars
+                     {: RESULT = (String)stars; :}
+                   ;
+
+/* Valor de calorías: INT seguido opcionalmente de UNIT */
+calorias_valor ::= INT:cal
+                   {: RESULT = (Integer)cal; :}
+                 | INT:cal UNIT:unidad_cal
+                   {: RESULT = (Integer)cal; :}
+                 ;
+
+/* Campos opcionales: pueden aparecer en cualquier orden o no aparecer */
+campos_opcionales ::= 
+                     {: 
+                       RESULT = null; // No hay campos opcionales
+                     :}
+                   | campos_opcionales:opc campo_opcional:campo
+                     {: 
+                       if (opc == null) {
+                           opc = new CamposOpcionales();
+                       }
+                       if (campo.dificultad != null) opc.dificultad = campo.dificultad;
+                       if (campo.origen != null) opc.origen = campo.origen;
+                       if (campo.tipo != null) opc.tipo = campo.tipo;
+                       if (campo.observaciones != null) opc.observaciones = campo.observaciones;
+                       if (campo.relacionadas != null) opc.relacionadas = campo.relacionadas;
+                       if (campo.infoAdicional != null) {
+                           if (opc.infoAdicional == null) {
+                               opc.infoAdicional = new java.util.HashMap<String, String>();
+                           }
+                           opc.infoAdicional.putAll(campo.infoAdicional);
+                       }
+                       RESULT = opc;
+                     :}
+                   ;
+
+/* Un campo opcional individual */
+campo_opcional ::= DIFICULTAD_KW COLON dificultad_valor:dif
+                   {: 
+                     CamposOpcionales c = new CamposOpcionales();
+                     c.dificultad = (String)dif;
+                     RESULT = c;
+                   :}
+                 | ORIGEN_KW COLON ID:orig
+                   {: 
+                     CamposOpcionales c = new CamposOpcionales();
+                     c.origen = (String)orig;
+                     RESULT = c;
+                   :}
+                 | TIPO_KW COLON ID:tipo
+                   {: 
+                     CamposOpcionales c = new CamposOpcionales();
+                     c.tipo = (String)tipo;
+                     RESULT = c;
+                   :}
+                 | OBS_KW COLON STRING:obs
+                   {: 
+                     CamposOpcionales c = new CamposOpcionales();
+                     c.observaciones = (String)obs;
+                     RESULT = c;
+                   :}
+                 | RELACIONADAS_KW COLON lista_recetas_relacionadas:rel
+                   {: 
+                     CamposOpcionales c = new CamposOpcionales();
+                     c.relacionadas = rel;
+                     RESULT = c;
+                   :}
+                 | info_adicional:info
+                   {: 
+                     CamposOpcionales c = new CamposOpcionales();
+                     c.infoAdicional = info;
+                     RESULT = c;
+                   :}
+                 ;
+
+/* Lista de ingredientes: uno o más ingredientes */
+lista_ingredientes ::= ingrediente:i
+                       {: 
+                         java.util.List<Ingrediente> lista = new java.util.ArrayList<Ingrediente>();
+                         lista.add(i);
+                         RESULT = lista;
+                       :}
+                     | lista_ingredientes:li ingrediente:i
+                       {: 
+                         li.add(i);
+                         RESULT = li;
+                       :}
+                     ;
+
+/* Un ingrediente: nombre cantidad_opcional [unidad] o nombre "a gusto" */
+/* Soporta nombres compuestos de hasta 2 palabras (ej: "salsa tomate") */
+/* IMPORTANTE: Reglas más específicas (dos IDs) van PRIMERO para evitar ambigüedades */
+ingrediente ::= ID:nombre1 ID:nombre2 INT:cant UNIT:unid
+                {: 
+                  Ingrediente ing = new Ingrediente();
+                  ing.setNombre((String)nombre1 + " " + (String)nombre2);
+                  ing.setCantidad(String.valueOf((Integer)cant));
+                  ing.setUnidad((String)unid);
+                  RESULT = ing;
+                :}
+              | ID:nombre1 ID:nombre2 DEC:cant UNIT:unid
+                {: 
+                  Ingrediente ing = new Ingrediente();
+                  ing.setNombre((String)nombre1 + " " + (String)nombre2);
+                  ing.setCantidad((String)cant);
+                  ing.setUnidad((String)unid);
+                  RESULT = ing;
+                :}
+              | ID:nombre1 ID:nombre2 FRAC:cant UNIT:unid
+                {: 
+                  Ingrediente ing = new Ingrediente();
+                  ing.setNombre((String)nombre1 + " " + (String)nombre2);
+                  ing.setCantidad((String)cant);
+                  ing.setUnidad((String)unid);
+                  RESULT = ing;
+                :}
+              | ID:nombre1 ID:nombre2 A_GUSTO
+                {: 
+                  Ingrediente ing = new Ingrediente();
+                  ing.setNombre((String)nombre1 + " " + (String)nombre2);
+                  ing.setCantidad("a gusto");
+                  RESULT = ing;
+                :}
+              | ID:nombre1 INT:cant UNIT:unid
+                {: 
+                  Ingrediente ing = new Ingrediente();
+                  ing.setNombre((String)nombre1);
+                  ing.setCantidad(String.valueOf((Integer)cant));
+                  ing.setUnidad((String)unid);
+                  RESULT = ing;
+                :}
+              | ID:nombre1 DEC:cant UNIT:unid
+                {: 
+                  Ingrediente ing = new Ingrediente();
+                  ing.setNombre((String)nombre1);
+                  ing.setCantidad((String)cant);
+                  ing.setUnidad((String)unid);
+                  RESULT = ing;
+                :}
+              | ID:nombre1 FRAC:cant UNIT:unid
+                {: 
+                  Ingrediente ing = new Ingrediente();
+                  ing.setNombre((String)nombre1);
+                  ing.setCantidad((String)cant);
+                  ing.setUnidad((String)unid);
+                  RESULT = ing;
+                :}
+              | ID:nombre1 UNIT:unid
+                {: 
+                  Ingrediente ing = new Ingrediente();
+                  ing.setNombre((String)nombre1);
+                  ing.setUnidad((String)unid);
+                  RESULT = ing;
+                :}
+              | ID:nombre1 INT:cant
+                {: 
+                  Ingrediente ing = new Ingrediente();
+                  ing.setNombre((String)nombre1);
+                  ing.setCantidad(String.valueOf((Integer)cant));
+                  RESULT = ing;
+                :}
+              | ID:nombre1 DEC:cant
+                {: 
+                  Ingrediente ing = new Ingrediente();
+                  ing.setNombre((String)nombre1);
+                  ing.setCantidad((String)cant);
+                  RESULT = ing;
+                :}
+              | ID:nombre1 FRAC:cant
+                {: 
+                  Ingrediente ing = new Ingrediente();
+                  ing.setNombre((String)nombre1);
+                  ing.setCantidad((String)cant);
+                  RESULT = ing;
+                :}
+              | ID:nombre1 A_GUSTO
+                {: 
+                  Ingrediente ing = new Ingrediente();
+                  ing.setNombre((String)nombre1);
+                  ing.setCantidad("a gusto");
+                  RESULT = ing;
+                :}
+              ;
+
+/* Cantidad opcional: puede ser INT, DEC, FRAC o nada */
+cantidad_opcional ::= INT:n
+                      {: RESULT = String.valueOf((Integer)n); :}
+                    | DEC:d
+                      {: RESULT = (String)d; :}
+                    | FRAC:f
+                      {: RESULT = (String)f; :}
+                    | 
+                      {: RESULT = null; :}
+                    ;
+
+/* Lista de pasos: uno o más pasos numerados */
+lista_pasos ::= STEPNUM:num paso_texto:texto
+                {: 
+                  java.util.List<String> lista = new java.util.ArrayList<String>();
+                  String paso = (Integer)num + ". " + texto;
+                  lista.add(paso);
+                  RESULT = lista;
+                :}
+              | lista_pasos:lp STEPNUM:num paso_texto:texto
+                {: 
+                  String paso = (Integer)num + ". " + texto;
+                  lp.add(paso);
+                  RESULT = lp;
+                :}
+              ;
+
+/* Texto de un paso: puede contener IDs, números, puntuación, etc. */
+paso_texto ::= elemento_paso:e
+               {: RESULT = e; :}
+             | paso_texto:pt elemento_paso:e
+               {: RESULT = pt + " " + e; :}
+             ;
+
+/* Elemento de paso: ID, número, unidad, o puntuación */
+elemento_paso ::= ID:t
+                  {: RESULT = (String)t; :}
+                | INT:n
+                  {: RESULT = String.valueOf((Integer)n); :}
+                | DEC:d
+                  {: RESULT = (String)d; :}
+                | FRAC:f
+                  {: RESULT = (String)f; :}
+                | UNIT:u
+                  {: RESULT = (String)u; :}
+                | TRES_PUNTOS
+                  {: RESULT = "..."; :}
+                | DOT
+                  {: RESULT = "."; :}
+                | COLON
+                  {: RESULT = ":"; :}
+                | COMMA
+                  {: RESULT = ","; :}
+                ;
+
+/* Lista de categorías: [CAT1, CAT2, ...] */
+lista_categorias ::= LBRACK lista_categorias_interna:cats RBRACK
+                     {: RESULT = cats; :}
+                   ;
+
+lista_categorias_interna ::= ID:cat
+                             {: 
+                               java.util.List<String> lista = new java.util.ArrayList<String>();
+                               lista.add((String)cat);
+                               RESULT = lista;
+                             :}
+                           | lista_categorias_interna:lc COMMA ID:cat
+                             {: 
+                               lc.add((String)cat);
+                               RESULT = lc;
+                             :}
+                           ;
+
+/* Lista de recetas relacionadas: STRING, STRING, ... */
+lista_recetas_relacionadas ::= STRING:r1
+                               {: 
+                                 java.util.List<String> lista = new java.util.ArrayList<String>();
+                                 lista.add((String)r1);
+                                 RESULT = lista;
+                               :}
+                             | lista_recetas_relacionadas:lr COMMA STRING:r
+                               {: 
+                                 lr.add((String)r);
+                                 RESULT = lr;
+                               :}
+                             ;
+
+/* Información adicional: Etiqueta=valor, Etiqueta2=valor2, ... */
+info_adicional ::= ID:etiqueta EQ valor_info:valor
+                   {: 
+                     java.util.Map<String, String> mapa = new java.util.HashMap<String, String>();
+                     mapa.put((String)etiqueta, valor);
+                     RESULT = mapa;
+                   :}
+                 | info_adicional:info COMMA ID:etiqueta EQ valor_info:valor
+                   {: 
+                     info.put((String)etiqueta, valor);
+                     RESULT = info;
+                   :}
+                 ;
+
+/* Valor para información adicional: puede ser ID, STRING, número, etc. */
+valor_info ::= ID:v
+               {: RESULT = (String)v; :}
+             | STRING:v
+               {: RESULT = (String)v; :}
+             | INT:n
+               {: RESULT = String.valueOf((Integer)n); :}
+             | DEC:d
+               {: RESULT = (String)d; :}
+             | FRAC:f
+               {: RESULT = (String)f; :}
+             ;
+

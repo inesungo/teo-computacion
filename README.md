@@ -142,3 +142,4 @@ El proyecto está dividido en **3 partes principales** para trabajo en paralelo:
 ## Contacto
 
 [Agregar información de contacto del equipo]
+
