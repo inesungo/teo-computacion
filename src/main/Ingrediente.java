@@ -48,9 +48,9 @@ public class Ingrediente {
      * Útil para operaciones matemáticas (ej: calcular totales).
      */
     public double getCantidadEnUnidadBase() {
-        // TODO: Implementar conversión según el tipo de unidad
-        // Ejemplo: convertir tazas a litros, kg a gramos, etc.
-        return 0.0;
+        Double val = main.Unidades.parseCantidad(this.cantidad);
+        if (val == null) return Double.NaN; // "a gusto" o sin cantidad
+        return main.Unidades.aUnidadBase(val, this.unidad);
     }
     
     @Override
