@@ -104,12 +104,15 @@ receta ::= RECETA_KW STRING:nombre
              
              // Campos opcionales (incluye Dificultad)
              if (opc != null) {
-                 if (opc.dificultad != null) rec.setDificultad(opc.dificultad);
-                 if (opc.origen != null) rec.setOrigen(opc.origen);
-                 if (opc.tipo != null) rec.setTipo(opc.tipo);
-                 if (opc.observaciones != null) rec.setObservaciones(opc.observaciones);
-                 if (opc.relacionadas != null) rec.getRecetasRelacionadas().addAll(opc.relacionadas);
-                 if (opc.infoAdicional != null) rec.getInformacionAdicional().putAll(opc.infoAdicional);
+                if (opc.dificultad != null) rec.setDificultad(opc.dificultad);
+                if (opc.origen != null) rec.setOrigen(opc.origen);
+                if (opc.tipo != null) rec.setTipo(opc.tipo);
+                if (opc.observaciones != null) rec.setObservaciones(opc.observaciones);
+                if (opc.relacionadas != null) {
+                   // System.err.println("[CUP] Pasando a Receta: " + opc.relacionadas); // <-- DEBUG
+                    rec.getRecetasRelacionadas().addAll(opc.relacionadas);
+                }
+                if (opc.infoAdicional != null) rec.getInformacionAdicional().putAll(opc.infoAdicional);
              }
              
              RESULT = rec;
@@ -162,13 +165,21 @@ campos_opcionales ::=
                        if (campo.origen != null) opc.origen = campo.origen;
                        if (campo.tipo != null) opc.tipo = campo.tipo;
                        if (campo.observaciones != null) opc.observaciones = campo.observaciones;
-                       if (campo.relacionadas != null) opc.relacionadas = campo.relacionadas;
-                       if (campo.infoAdicional != null) {
-                           if (opc.infoAdicional == null) {
-                               opc.infoAdicional = new java.util.HashMap<String, String>();
-                           }
-                           opc.infoAdicional.putAll(campo.infoAdicional);
-                       }
+
+                       // cambio para agregar las recetas que estan relacionadas
+                       if (campo.relacionadas != null && !campo.relacionadas.isEmpty()) {
+                                if (opc.relacionadas == null) {
+                                    opc.relacionadas = new java.util.ArrayList<String>();
+                                }
+                                opc.relacionadas.addAll(campo.relacionadas);
+                            }
+
+                       if (campo.infoAdicional != null && !campo.infoAdicional.isEmpty()) {
+                                if (opc.infoAdicional == null) {
+                                    opc.infoAdicional = new java.util.HashMap<String,String>();
+                                }
+                                opc.infoAdicional.putAll(campo.infoAdicional);
+                            }
                        RESULT = opc;
                      :}
                    ;
@@ -199,11 +210,12 @@ campo_opcional ::= DIFICULTAD_KW COLON dificultad_valor:dif
                      RESULT = c;
                    :}
                  | RELACIONADAS_KW COLON lista_recetas_relacionadas:rel
-                   {: 
-                     CamposOpcionales c = new CamposOpcionales();
-                     c.relacionadas = rel;
-                     RESULT = c;
-                   :}
+                    {:
+                       //System.err.println("[CUP] Cargadas relacionadas: " + rel); // DEBUG
+                       CamposOpcionales c = new CamposOpcionales();
+                       c.relacionadas = rel;
+                       RESULT = c;
+                     :}
                  | info_adicional:info
                    {: 
                      CamposOpcionales c = new CamposOpcionales();
