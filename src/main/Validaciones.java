@@ -6,62 +6,6 @@ import java.util.regex.*;
 public final class Validaciones {
     private Validaciones() {}
 
-    public static List<String> validarRecetasRelacionadas(Recetario recetario) {
-        List<String> errores = new ArrayList<>();
-        if (recetario == null || recetario.getRecetas() == null) return errores;
-
-        // normalizador: trim + lower + colapsar espacios + quitar comillas al borde
-        java.util.function.Function<String,String> norm = s -> {
-            if (s == null) return "";
-            String t = s.trim();
-            // quitar comillas simples/dobles alrededor si quedaron del parser
-            if ((t.startsWith("\"") && t.endsWith("\"")) || (t.startsWith("'") && t.endsWith("'"))) {
-                t = t.substring(1, t.length() - 1).trim();
-            }
-            // colapsar espacios múltiples internos
-            t = t.replaceAll("\\s+", " ").toLowerCase(java.util.Locale.ROOT);
-            return t;
-        };
-
-        // set de nombres existentes (normalizados)
-        Set<String> nombres = new HashSet<>();
-        for (Receta r : recetario.getRecetas()) {
-            if (r.getNombre() != null) nombres.add(norm.apply(r.getNombre()));
-        }
-
-        for (Receta r : recetario.getRecetas()) {
-            String propio = norm.apply(r.getNombre());
-            List<String> rels = r.getRecetasRelacionadas();
-            if (rels == null) continue;
-
-            for (String rel : rels) {
-                String k = norm.apply(rel);
-                if (k.isEmpty()) continue;
-
-                if (k.equals(propio)) {
-                    errores.add("Receta '" + r.getNombre() + "' se relaciona consigo misma.");
-                } else if (!nombres.contains(k)) {
-                    errores.add("Receta relacionada '" + rel + "' no existe (referida desde '" + r.getNombre() + "').");
-                }
-            }
-        }
-        return errores;
-    }
-
-
-    public static List<String> validarUnidadesIngredientes(Recetario recetario) {
-        List<String> errores = new ArrayList<>();
-        for (Receta r : recetario.getRecetas()) {
-            for (Ingrediente i : r.getIngredientes()) {
-                String u = i.getUnidad();
-                if (!Unidades.esUnidadSoportada(u)) {
-                    errores.add("Unidad no soportada '" + u + "' en ingrediente '" + i.getNombre() + "' de '" + r.getNombre() + "'.");
-                }
-            }
-        }
-        return errores;
-    }
-
     public static Integer tiempoEnMinutos(String texto) {
         if (texto == null) return null;
         String t = texto.trim().toLowerCase(Locale.ROOT);
@@ -196,5 +140,80 @@ public final class Validaciones {
 
         return salida;
     }
+
+    public static List<String> validarUnidadesPorIngrediente(Recetario recetario) {
+        List<String> mensajes = new ArrayList<>();
+        if (recetario == null || recetario.getRecetas() == null) return mensajes;
+
+        // Mapa de unidades válidas por ingrediente (normalizados)
+        Map<String, Set<String>> mapa = new HashMap<>();
+
+        mapa.put("leche", Set.of("l", "ml", "taza", "tazas", "cuchara", "cucharas", "cucharita", "cucharitas"));
+        mapa.put("harina", Set.of("g", "kg", "taza", "tazas"));
+        mapa.put("azúcar", Set.of("g", "kg", "taza", "tazas"));
+        mapa.put("azucar", Set.of("g", "kg", "taza", "tazas")); // sin tilde
+        mapa.put("huevo", Set.of("u"));
+        mapa.put("huevos", Set.of("u"));
+        mapa.put("manteca", Set.of("g", "kg", "cucharas", "cuchara"));
+        mapa.put("aceite", Set.of("ml", "l", "cucharas", "tazas"));
+        mapa.put("sal", Set.of("g", "kg", "cucharita", "cucharitas", "a gusto"));
+        mapa.put("pimienta", Set.of("g", "cucharita", "a gusto"));
+        mapa.put("chocolate", Set.of("g", "taza", "ml"));
+        mapa.put("vainilla", Set.of("ml", "cucharita", "cucharitas"));
+        mapa.put("chorizo", Set.of("g", "kg", "u"));
+        mapa.put("lentejas", Set.of("g", "kg", "taza", "tazas"));
+        mapa.put("salsa tomate", Set.of("ml", "l", "taza", "tazas"));
+        mapa.put("cebolla", Set.of("g", "kg", "u"));
+        mapa.put("morrón", Set.of("u", "g", "kg"));
+        mapa.put("papa", Set.of("u", "g", "kg"));
+        mapa.put("pollo", Set.of("g", "kg", "u"));
+        // --- Nuevos ingredientes detectados en tus advertencias ---
+        mapa.put("agua", Set.of("ml", "l", "taza", "tazas", "cuchara", "cucharas"));
+        mapa.put("zanahoria", Set.of("u", "g", "kg", "taza", "tazas"));
+        mapa.put("zapallito", Set.of("u", "g", "kg"));
+        mapa.put("queso", Set.of("g", "kg", "taza", "tazas", "cuchara", "cucharas"));
+        mapa.put("ajo", Set.of("u", "g", "cucharita", "cucharitas"));
+        mapa.put("romero", Set.of("g", "cucharita", "cucharitas"));
+        mapa.put("lechuga", Set.of("u", "g"));
+        mapa.put("pan", Set.of("u", "g"));
+        mapa.put("queso parmesano", Set.of("g", "taza", "tazas", "cuchara", "cucharas"));
+        mapa.put("jugo limón", Set.of("ml", "l", "cuchara", "cucharas"));
+        mapa.put("mostaza", Set.of("ml", "cuchara", "cucharas", "cucharita", "cucharitas"));
+        mapa.put("calabaza", Set.of("u", "g", "kg", "taza", "tazas"));
+        mapa.put("crema", Set.of("ml", "l", "taza", "tazas"));
+        mapa.put("caldo", Set.of("ml", "l", "taza", "tazas"));
+        mapa.put("nuez moscada", Set.of("g", "cucharita", "cucharitas"));
+        mapa.put("manzana", Set.of("u", "g"));
+        mapa.put("canela", Set.of("g", "cucharita", "cucharitas"));
+
+
+        for (Receta r : recetario.getRecetas()) {
+            for (Ingrediente i : r.getIngredientes()) {
+                String nombre = i.getNombre() == null ? "" : i.getNombre().toLowerCase(Locale.ROOT).trim();
+                String unidad = i.getUnidad() == null ? "" : i.getUnidad().toLowerCase(Locale.ROOT).trim();
+                String cantidad = i.getCantidad() == null ? "" : i.getCantidad().toLowerCase(Locale.ROOT).trim();
+
+                // Ignorar "a gusto" en cantidad
+                if ("a gusto".equals(cantidad)) continue;
+
+                // Si no está en el mapa
+                if (!mapa.containsKey(nombre)) {
+                    mensajes.add("Advertencia: No se definieron unidades válidas para '"
+                            + i.getNombre() + "' en receta '" + r.getNombre() + "'.");
+                    continue;
+                }
+
+                // Verificar unidad incoherente
+                if (!unidad.isEmpty() && !mapa.get(nombre).contains(unidad)) {
+                    mensajes.add("Error: Unidad '" + unidad + "' no válida para '" + i.getNombre()
+                            + "' en receta '" + r.getNombre() + "'. Permitidas: " + mapa.get(nombre));
+                }
+            }
+        }
+
+        return mensajes;
+    }
+
+
 
 }
