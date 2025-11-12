@@ -51,6 +51,7 @@ public class Main {
             System.out.println("3) Validar unidades de ingredientes (B)");
             System.out.println("4) Generar carrito de compras (elegir recetas por nombre)");
             System.out.println("5) Generar menú semanal (simple)");
+            System.out.println("6) Validar tiempos (D)");
             System.out.println("0) Salir");
             System.out.print("Opción: ");
 
@@ -72,12 +73,12 @@ public class Main {
                 }
 
                 case "3": {
-                    List<String> errores = Validaciones.validarUnidadesIngredientes(recetario);
-                    if (errores.isEmpty()) {
-                        System.out.println("OK: Todas las unidades son soportadas.");
+                    List<String> mensajes = Validaciones.validarUnidadesPorIngrediente(recetario);
+                    if (mensajes.isEmpty()) {
+                        System.out.println("OK: Todas las unidades son coherentes con los ingredientes.");
                     } else {
-                        System.out.println("Unidades no soportadas / problemas detectados:");
-                        errores.forEach(s -> System.out.println(" - " + s));
+                        System.out.println("Resultados de validación de unidades:");
+                        mensajes.forEach(s -> System.out.println(" - " + s));
                     }
                     break;
                 }
@@ -96,12 +97,29 @@ public class Main {
 
 
                 case "5": {
-                    int dias = leerEntero("Cantidad de días (ej. 7): ");
+                    int dias = leerEntero("Cantidad de días (1..7 recomendado): ");
                     int maxCal = leerEntero("Calorías máximas por día (0 = sin tope): ");
-                    List<Receta> menu = MenuSemanal.generar(recetario, dias, maxCal);
-                    System.out.println(MenuSemanal.imprimir(menu));
+                    System.out.print("Filtro de tipo (ej. light) [Enter = ninguno]: ");
+                    String filtro = SC.nextLine().trim();
+                    if (filtro.isEmpty()) filtro = null;
+
+                    List<MenuSemanal.MenuDia> menu = MenuSemanal.generarAvanzado(recetario, dias, maxCal, filtro);
+                    System.out.println(MenuSemanal.imprimirAvanzado(menu, filtro, maxCal));
                     break;
                 }
+
+
+                case "6": {
+                    List<String> adv = Validaciones.validarTiempos(recetario);
+                    if (adv.isEmpty()) {
+                        System.out.println("OK: Todos los tiempos fueron reconocidos.");
+                    } else {
+                        System.out.println("Advertencias de tiempos:");
+                        adv.forEach(s -> System.out.println(" - " + s));
+                    }
+                    break;
+                }
+
 
                 case "0":
                     return;
