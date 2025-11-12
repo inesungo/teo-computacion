@@ -119,23 +119,26 @@ receta ::= RECETA_KW STRING:nombre
            :}
          ;
 
-/* Valor de tiempo: puede ser un ID (ej: "45 min", "1h 15 min") */
+/* Valor de tiempo: construir un string libre con piezas típicas de tiempo */
 tiempo_valor ::= texto_tiempo:t
-                 {: RESULT = t; :}
+                 {: RESULT = t.trim(); :}
                ;
 
-/* Texto de tiempo: puede ser ID, o combinaciones de números y unidades */
-texto_tiempo ::= ID:t
-                 {: RESULT = (String)t; :}
-               | INT:n1 ID:u1
-                 {: RESULT = n1 + (String)u1; :}
-               | INT:n1 ID:u1 INT:n2 ID:u2
-                 {: RESULT = n1 + (String)u1 + " " + n2 + " " + (String)u2; :}
-               | INT:n1 ID:u1 INT:n2
-                 {: RESULT = n1 + (String)u1 + " " + n2; :}
-               | INT:n1
-                 {: RESULT = String.valueOf((Integer)n1); :}
+/* Texto de tiempo: concatenamos piezas (IDs, números, fracciones, “:”) */
+texto_tiempo ::= pieza_tiempo:p
+                 {: RESULT = p; :}
+               | texto_tiempo:acc pieza_tiempo:p
+                 {: RESULT = acc + " " + p; :}
                ;
+
+/* Piezas válidas para tiempo */
+pieza_tiempo ::= ID:t           {: RESULT = (String)t; :}
+               | INT:n          {: RESULT = String.valueOf((Integer)n); :}
+               | DEC:d          {: RESULT = (String)d; :}
+               | FRAC:f         {: RESULT = (String)f; :}
+               | COLON          {: RESULT = ":"; :}    /* para HH:MM */
+               ;
+
 
 /* Valor de dificultad: puede ser texto (ID) o estrellas (STARS) */
 dificultad_valor ::= ID:txt
