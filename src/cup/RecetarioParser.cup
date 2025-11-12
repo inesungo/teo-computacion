@@ -39,7 +39,8 @@ non terminal CamposOpcionales campos_opcionales;
 non terminal CamposOpcionales campo_opcional;
 non terminal java.util.Map<String, String> info_adicional;
 non terminal String valor_info;
-non terminal String cantidad_opcional;
+//non terminal String cantidad_opcional;
+non terminal String pieza_tiempo;
 
 /* ===== PRECEDENCIA ===== */
 precedence left COMMA;
@@ -336,16 +337,16 @@ ingrediente ::= ID:nombre1 ID:nombre2 INT:cant UNIT:unid
                 :}
               ;
 
-/* Cantidad opcional: puede ser INT, DEC, FRAC o nada */
+/* Cantidad opcional: puede ser INT, DEC, FRAC o nada
 cantidad_opcional ::= INT:n
                       {: RESULT = String.valueOf((Integer)n); :}
                     | DEC:d
                       {: RESULT = (String)d; :}
                     | FRAC:f
                       {: RESULT = (String)f; :}
-                    | 
+                    |
                       {: RESULT = null; :}
-                    ;
+                    ;*/
 
 /* Lista de pasos: uno o más pasos numerados */
 lista_pasos ::= STEPNUM:num paso_texto:texto
