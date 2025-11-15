@@ -86,7 +86,7 @@ public final class Validaciones {
         };
 
         // set nombres existentes (normalizados)
-        Map<String,String> displayPorKey = new LinkedHashMap<>(); // key normalizado -> primera forma vista
+        Map<String,String> displayPorKey = new LinkedHashMap<>();
         Set<String> existentes = new HashSet<>();
         for (Receta r : recetario.getRecetas()) {
             String disp = r.getNombre() == null ? "" : r.getNombre().trim();
@@ -167,7 +167,6 @@ public final class Validaciones {
         mapa.put("morrón", Set.of("u", "g", "kg"));
         mapa.put("papa", Set.of("u", "g", "kg"));
         mapa.put("pollo", Set.of("g", "kg", "u"));
-        // --- Nuevos ingredientes detectados en tus advertencias ---
         mapa.put("agua", Set.of("ml", "l", "taza", "tazas", "cuchara", "cucharas"));
         mapa.put("zanahoria", Set.of("u", "g", "kg", "taza", "tazas"));
         mapa.put("zapallito", Set.of("u", "g", "kg"));

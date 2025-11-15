@@ -47,11 +47,11 @@ public class Main {
         while (true) {
             System.out.println("\n=== MENÚ ===");
             System.out.println("1) Resumen del recetario");
-            System.out.println("2) Validar recetas relacionadas (A)");
-            System.out.println("3) Validar unidades de ingredientes (B)");
-            System.out.println("4) Generar carrito de compras (elegir recetas por nombre)");
-            System.out.println("5) Generar menú semanal (simple)");
-            System.out.println("6) Validar tiempos (D)");
+            System.out.println("2) Validar recetas relacionadas");
+            System.out.println("3) Validar unidades de ingredientes");
+            System.out.println("4) Generar carrito de compras");
+            System.out.println("5) Generar menu semanal");
+            System.out.println("6) Validar tiempos");
             System.out.println("0) Salir");
             System.out.print("Opción: ");
 
@@ -88,7 +88,7 @@ public class Main {
                     for (Receta r : recetario.getRecetas()) System.out.println(" - " + r.getNombre());
                     System.out.println("Ingrese nombres de recetas separados por coma:");
                     String linea = SC.nextLine();
-                    int personas = leerEntero("¿Para cuántas personas? ");
+                    int personas = leerEntero("¿Para cuantas personas? ");
                     List<Receta> elegidas = seleccionarRecetasSmart(recetario, linea);
                     Map<String, ItemCarrito> mapa = CarritoCompras.consolidarConPersonas(elegidas, personas);
                     System.out.println(CarritoCompras.imprimir(mapa));
@@ -103,8 +103,8 @@ public class Main {
                     String filtro = SC.nextLine().trim();
                     if (filtro.isEmpty()) filtro = null;
 
-                    List<MenuSemanal.MenuDia> menu = MenuSemanal.generarAvanzado(recetario, dias, maxCal, filtro);
-                    System.out.println(MenuSemanal.imprimirAvanzado(menu, filtro, maxCal));
+                    List<MenuSemanal.MenuDia> menu = MenuSemanal.generarPorCategorias(recetario, dias, maxCal, filtro);
+                    System.out.println(MenuSemanal.imprimirPorCategorias(menu, maxCal));
                     break;
                 }
 
@@ -130,23 +130,6 @@ public class Main {
         }
     }
 
-    private static List<Receta> seleccionarRecetas(Recetario recetario, String linea) {
-        List<Receta> out = new ArrayList<>();
-        if (linea == null || linea.trim().isEmpty()) return out;
-
-        String[] partes = linea.split(",");
-        for (String p : partes) {
-            String nombre = p.trim();
-            if (nombre.isEmpty()) continue;
-            Receta r = recetario.buscarReceta(nombre);
-            if (r == null) {
-                System.out.println("! Aviso: receta no encontrada: \"" + nombre + "\" (omitida)");
-            } else {
-                out.add(r);
-            }
-        }
-        return out;
-    }
 
     private static int leerEntero(String prompt) {
         while (true) {
