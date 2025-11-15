@@ -67,7 +67,7 @@ STRCHAR = [^\\\"\r\n]
 "DIFICULTAD"                { return sym(sym.DIFICULTAD_KW); }
 "TIPO"                      { return sym(sym.TIPO_KW); }
 
-"RECETAS" [ ]+ "RELACIONADAS" { return sym(sym.RELACIONADAS_KW); }
+"RECETAS"{ESP}+"RELACIONADAS" { return sym(sym.RELACIONADAS_KW);}
 "OBS"                         { return sym(sym.OBS_KW); }
 
 /* ===== PUNTUACIÓN / SÍMBOLOS ===== */

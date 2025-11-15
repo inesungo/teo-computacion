@@ -39,7 +39,8 @@ non terminal CamposOpcionales campos_opcionales;
 non terminal CamposOpcionales campo_opcional;
 non terminal java.util.Map<String, String> info_adicional;
 non terminal String valor_info;
-non terminal String cantidad_opcional;
+//non terminal String cantidad_opcional;
+non terminal String pieza_tiempo;
 
 /* ===== PRECEDENCIA ===== */
 precedence left COMMA;
@@ -104,35 +105,41 @@ receta ::= RECETA_KW STRING:nombre
              
              // Campos opcionales (incluye Dificultad)
              if (opc != null) {
-                 if (opc.dificultad != null) rec.setDificultad(opc.dificultad);
-                 if (opc.origen != null) rec.setOrigen(opc.origen);
-                 if (opc.tipo != null) rec.setTipo(opc.tipo);
-                 if (opc.observaciones != null) rec.setObservaciones(opc.observaciones);
-                 if (opc.relacionadas != null) rec.getRecetasRelacionadas().addAll(opc.relacionadas);
-                 if (opc.infoAdicional != null) rec.getInformacionAdicional().putAll(opc.infoAdicional);
+                if (opc.dificultad != null) rec.setDificultad(opc.dificultad);
+                if (opc.origen != null) rec.setOrigen(opc.origen);
+                if (opc.tipo != null) rec.setTipo(opc.tipo);
+                if (opc.observaciones != null) rec.setObservaciones(opc.observaciones);
+                if (opc.relacionadas != null) {
+                   // System.err.println("[CUP] Pasando a Receta: " + opc.relacionadas); // <-- DEBUG
+                    rec.getRecetasRelacionadas().addAll(opc.relacionadas);
+                }
+                if (opc.infoAdicional != null) rec.getInformacionAdicional().putAll(opc.infoAdicional);
              }
              
              RESULT = rec;
            :}
          ;
 
-/* Valor de tiempo: puede ser un ID (ej: "45 min", "1h 15 min") */
+/* Valor de tiempo: construir un string libre con piezas típicas de tiempo */
 tiempo_valor ::= texto_tiempo:t
-                 {: RESULT = t; :}
+                 {: RESULT = t.trim(); :}
                ;
 
-/* Texto de tiempo: puede ser ID, o combinaciones de números y unidades */
-texto_tiempo ::= ID:t
-                 {: RESULT = (String)t; :}
-               | INT:n1 ID:u1
-                 {: RESULT = n1 + (String)u1; :}
-               | INT:n1 ID:u1 INT:n2 ID:u2
-                 {: RESULT = n1 + (String)u1 + " " + n2 + " " + (String)u2; :}
-               | INT:n1 ID:u1 INT:n2
-                 {: RESULT = n1 + (String)u1 + " " + n2; :}
-               | INT:n1
-                 {: RESULT = String.valueOf((Integer)n1); :}
+/* Texto de tiempo: concatenamos piezas (IDs, números, fracciones, “:”) */
+texto_tiempo ::= pieza_tiempo:p
+                 {: RESULT = p; :}
+               | texto_tiempo:acc pieza_tiempo:p
+                 {: RESULT = acc + " " + p; :}
                ;
+
+/* Piezas válidas para tiempo */
+pieza_tiempo ::= ID:t           {: RESULT = (String)t; :}
+               | INT:n          {: RESULT = String.valueOf((Integer)n); :}
+               | DEC:d          {: RESULT = (String)d; :}
+               | FRAC:f         {: RESULT = (String)f; :}
+               | COLON          {: RESULT = ":"; :}    /* para HH:MM */
+               ;
+
 
 /* Valor de dificultad: puede ser texto (ID) o estrellas (STARS) */
 dificultad_valor ::= ID:txt
@@ -162,13 +169,21 @@ campos_opcionales ::=
                        if (campo.origen != null) opc.origen = campo.origen;
                        if (campo.tipo != null) opc.tipo = campo.tipo;
                        if (campo.observaciones != null) opc.observaciones = campo.observaciones;
-                       if (campo.relacionadas != null) opc.relacionadas = campo.relacionadas;
-                       if (campo.infoAdicional != null) {
-                           if (opc.infoAdicional == null) {
-                               opc.infoAdicional = new java.util.HashMap<String, String>();
-                           }
-                           opc.infoAdicional.putAll(campo.infoAdicional);
-                       }
+
+                       // cambio para agregar las recetas que estan relacionadas
+                       if (campo.relacionadas != null && !campo.relacionadas.isEmpty()) {
+                                if (opc.relacionadas == null) {
+                                    opc.relacionadas = new java.util.ArrayList<String>();
+                                }
+                                opc.relacionadas.addAll(campo.relacionadas);
+                            }
+
+                       if (campo.infoAdicional != null && !campo.infoAdicional.isEmpty()) {
+                                if (opc.infoAdicional == null) {
+                                    opc.infoAdicional = new java.util.HashMap<String,String>();
+                                }
+                                opc.infoAdicional.putAll(campo.infoAdicional);
+                            }
                        RESULT = opc;
                      :}
                    ;
@@ -199,11 +214,12 @@ campo_opcional ::= DIFICULTAD_KW COLON dificultad_valor:dif
                      RESULT = c;
                    :}
                  | RELACIONADAS_KW COLON lista_recetas_relacionadas:rel
-                   {: 
-                     CamposOpcionales c = new CamposOpcionales();
-                     c.relacionadas = rel;
-                     RESULT = c;
-                   :}
+                    {:
+                       //System.err.println("[CUP] Cargadas relacionadas: " + rel); // DEBUG
+                       CamposOpcionales c = new CamposOpcionales();
+                       c.relacionadas = rel;
+                       RESULT = c;
+                     :}
                  | info_adicional:info
                    {: 
                      CamposOpcionales c = new CamposOpcionales();
@@ -321,16 +337,16 @@ ingrediente ::= ID:nombre1 ID:nombre2 INT:cant UNIT:unid
                 :}
               ;
 
-/* Cantidad opcional: puede ser INT, DEC, FRAC o nada */
+/* Cantidad opcional: puede ser INT, DEC, FRAC o nada
 cantidad_opcional ::= INT:n
                       {: RESULT = String.valueOf((Integer)n); :}
                     | DEC:d
                       {: RESULT = (String)d; :}
                     | FRAC:f
                       {: RESULT = (String)f; :}
-                    | 
+                    |
                       {: RESULT = null; :}
-                    ;
+                    ;*/
 
 /* Lista de pasos: uno o más pasos numerados */
 lista_pasos ::= STEPNUM:num paso_texto:texto

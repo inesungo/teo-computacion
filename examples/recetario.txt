@@ -46,3 +46,273 @@ Tipo: Proteico
 Recetas relacionadas: "Torta blanda chocolate", "Torta micro chocolate"
 Obs: "Ideal para acompañar con helado. Se puede agregar nueces."
 
+RECETA "Lentejas"
+INGREDIENTES:
+lentejas 500 g
+salsa tomate 0,3 l
+cebolla 0.5 kg
+morrón 2 u
+sal a gusto
+pimienta a gusto
+PASOS:
+1. Calentar
+2. hervir
+3. Saltear las verduras
+4. Agregar el caldo
+Tiempo: 1h
+Porciones: 3
+Calorías: 300 Kcal
+Categorías: [Principal]
+Origen: Uruguay
+Dificultad: ***
+Tipo: Proteico
+Recetas relacionadas: "Guiso"
+Obs: "Ideal para acompañar con helado. Se puede agregar nueces."
+
+
+RECETA "Tarta de Verduras"
+INGREDIENTES:
+harina 300 g
+manteca 100 g
+agua 80 ml
+zanahoria 2 u
+zapallito 2 u
+cebolla 0,25 kg
+queso 150 g
+sal a gusto
+pimienta a gusto
+PASOS:
+1. Arenar harina y manteca.
+2. Agregar agua y formar masa.
+3. Saltear verduras y mezclar con queso.
+4. Hornear 35 min a 180C.
+Tiempo: 45min
+Porciones: 6
+Calorías: 420 Kcal
+Categorías: [Principal, Vegetales]
+Origen: Uruguay
+Dificultad: MEDIA
+Tipo: VEGETARIANO
+Recetas relacionadas: "Guiso"
+Obs: "Podés sumar espinaca."
+
+RECETA "Pollo al Horno con Papas"
+INGREDIENTES:
+pollo 1,2 kg
+papa 1,0 kg
+aceite 3 cucharas
+ajo 2 u
+romero 1 cucharita
+sal a gusto
+pimienta a gusto
+PASOS:
+1. Cortar papas y disponer con pollo.
+2. Condimentar y agregar aceite.
+3. Hornear 1 h a 190C.
+Tiempo: 1h 10m
+Porciones: 4
+Calorías: 680 Kcal
+Categorías: [Principal]
+Origen: Argentina
+Dificultad: BAJA
+Tipo: Proteico
+Recetas relacionadas: "Guiso"
+Obs: "Terminar con limón si se desea."
+
+RECETA "Ensalada César Clásica"
+INGREDIENTES:
+lechuga 1 u
+pollo 300 g
+pan 2 tazas
+queso parmesano 80 g
+aceite 3 cucharas
+jugo limón 2 cucharas
+mostaza 1 cucharita
+ajo 1 u
+sal a gusto
+pimienta a gusto
+PASOS:
+1. Dorar pan para croutons.
+2. Sellar pollo en cubos.
+3. Mezclar aderezo y unir todo.
+Tiempo: 25min
+Porciones: 3
+Calorías: 350 Kcal
+Categorías: [Entrada]
+Origen: Italia
+Dificultad: MEDIA
+Tipo: Proteico
+Recetas relacionadas: "Tarta de Verduras", "Guiso"
+Obs: "Sumar anchoas opcional."
+
+RECETA "Sopa de Calabaza Cremosa"
+INGREDIENTES:
+calabaza 1,0 kg
+cebolla 0,2 kg
+crema 150 ml
+caldo 0,8 l
+aceite 2 cucharas
+nuez moscada 1/4 cucharita
+sal a gusto
+pimienta a gusto
+PASOS:
+1. Rehogar cebolla y calabaza.
+2. Agregar caldo y cocinar.
+3. Procesar y terminar con crema.
+Tiempo: 40min
+Porciones: 5
+Calorías: 210 Kcal
+Categorías: [Entrada, Vegetales]
+Origen: Uruguay
+Dificultad: BAJA
+Tipo: VEGETARIANO
+Recetas relacionadas: "Tarta de Verduras"
+Obs: "Ajustar textura con más caldo."
+
+RECETA "Torta de Manzana"
+INGREDIENTES:
+harina 280 g
+azúcar 200 g
+manteca 120 g
+huevo 3 u
+leche 150 ml
+manzana 2 u
+vainilla 1 cucharita
+canela 1 cucharita
+PASOS:
+1. Batir manteca con azúcar y huevos.
+2. Incorporar harina y leche.
+3. Agregar manzana en láminas.
+Hornear 45 min a 180C.
+Tiempo: 1h 15m
+Porciones: 10
+Calorías: 320 Kcal
+Categorías: [Postre, Merienda, Desayuno]
+Origen: España
+Dificultad: MEDIA
+Tipo: VEGETARIANO
+Recetas relacionadas: "Brownies de Chocolate"
+Obs: "Espolvorear azúcar impalpable al final."
+
+RECETA "Waffles"
+INGREDIENTES:
+harina 280 g
+azúcar 200 g
+manteca 120 g
+huevo 3 u
+leche 150 ml
+PASOS:
+1. Batir manteca con azúcar y huevos.
+2. Incorporar harina y leche.
+Wafflera 45 min.
+Tiempo: 1h 15m
+Porciones: 10
+Calorías: 320 Kcal
+Categorías: [Desayuno]
+Origen: España
+Dificultad: BAJA
+Tipo: VEGETARIANO
+Recetas relacionadas: "Torta de Manzana"
+Obs: "Espolvorear azúcar impalpable al final."
+
+RECETA "Pollo al Horno Ligero"
+INGREDIENTES:
+pollo 1 kg
+papa 300 g
+zanahoria 150 g
+aceite 20 ml
+sal 5 g
+PASOS:
+1. Cortar las verduras.
+2. Colocar todo en una bandeja y hornear.
+Horno 60 min.
+Tiempo: 1h
+Porciones: 4
+Calorías: 450 Kcal
+Categorías: [Principal]
+Origen: Uruguay
+Dificultad: MEDIA
+Tipo: LIGHT
+Recetas relacionadas: "Salmón al Limón"
+Obs: "Servir con jugo de limón."
+
+RECETA "Pasta Integral con Verduras"
+INGREDIENTES:
+pasta_integral 200 g
+zucchini 150 g
+morrón 100 g
+aceite 15 ml
+sal 3 g
+PASOS:
+1. Hervir la pasta.
+2. Saltear las verduras y mezclar.
+Olla 30 min.
+Tiempo: 45m
+Porciones: 3
+Calorías: 380 Kcal
+Categorías: [Principal]
+Origen: Italia
+Dificultad: MEDIA
+Tipo: LIGHT
+Recetas relacionadas: "Pasta Mediterránea"
+Obs: "Agregar queso rallado opcional."
+
+RECETA "Tostadas Integrales"
+INGREDIENTES:
+pan_integral 2 u
+queso_crema 20 g
+miel 10 g
+PASOS:
+1. Tostar el pan.
+2. Untar queso crema y agregar miel.
+Tostadora 5 min.
+Tiempo: 10m
+Porciones: 1
+Calorías: 180 Kcal
+Categorías: [Desayuno]
+Origen: Alemania
+Dificultad: BAJA
+Tipo: LIGHT
+Recetas relacionadas: "Waffles"
+Obs: "Ideal para acompañar con café."
+
+RECETA "Smoothie de Frutilla"
+INGREDIENTES:
+frutilla 150 g
+yogurt 200 ml
+miel 15 g
+hielo 5 u
+PASOS:
+1. Colocar todo en la licuadora.
+2. Procesar hasta obtener consistencia suave.
+Licuadora 3 min.
+Tiempo: 5m
+Porciones: 2
+Calorías: 250 Kcal
+Categorías: [Merienda]
+Origen: Argentina
+Dificultad: BAJA
+Tipo: LIGHT
+Recetas relacionadas: "Smoothie de Banana"
+Obs: "Servir bien frío."
+
+RECETA "Sopa de Verduras"
+INGREDIENTES:
+zanahoria 100 g
+puerro 80 g
+papa 150 g
+agua 1 l
+sal 4 g
+PASOS:
+1. Hervir las verduras.
+2. Procesar y servir caliente.
+Olla 40 min.
+Tiempo: 50m
+Porciones: 4
+Calorías: 120 Kcal
+Categorías: [Principal]
+Origen: Francia
+Dificultad: BAJA
+Tipo: LIGHT
+Recetas relacionadas: "Crema de Calabaza"
+Obs: "Se puede agregar crutones."
