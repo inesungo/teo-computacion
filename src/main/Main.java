@@ -30,7 +30,7 @@ public class Main {
                 System.exit(1);
             }
 
-            System.out.println("✓ Recetario parseado correctamente");
+            System.out.println("Recetario parseado correctamente");
             System.out.println("Recetas procesadas: " + recetario.cantidadRecetas());
 
             menu(recetario);
@@ -89,7 +89,7 @@ public class Main {
                     System.out.println("Ingrese nombres de recetas separados por coma:");
                     String linea = SC.nextLine();
                     int personas = leerEntero("¿Para cuantas personas? ");
-                    List<Receta> elegidas = seleccionarRecetasSmart(recetario, linea);
+                    List<Receta> elegidas = seleccionarRecetas(recetario, linea);
                     Map<String, ItemCarrito> mapa = CarritoCompras.consolidarConPersonas(elegidas, personas);
                     System.out.println(CarritoCompras.imprimir(mapa));
                     break;
@@ -140,7 +140,7 @@ public class Main {
         }
     }
 
-    private static List<Receta> seleccionarRecetasSmart(Recetario recetario, String linea) {
+    private static List<Receta> seleccionarRecetas(Recetario recetario, String linea) {
         List<Receta> out = new ArrayList<>();
         if (linea == null || linea.trim().isEmpty()) return out;
 
